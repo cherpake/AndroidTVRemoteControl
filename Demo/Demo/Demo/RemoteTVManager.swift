@@ -100,6 +100,10 @@ class RemoteTVManager {
             self.remoteManager.send(KeyPress(.KEYCODE_VOLUME_DOWN))
         }
     }
+    
+    func send(key: KeyPress) {
+        self.remoteManager.send(key)
+    }
 }
 
 public enum MyError: Error {

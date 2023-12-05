@@ -5,118 +5,79 @@
 //  Created by Roman Odyshew on 21.10.2023.
 //
 
-import Foundation
-import UIKit
+import SwiftUI
 
-extension ViewController {
-    class Views {
-        let connectButton = UIButton()
-        let codeTextField = UITextField()
-        let sendCodeButton = UIButton()
-        let runNetflixButton = UIButton()
-        
-        let volUpButton = UIButton()
-        let volDownButton = UIButton()
-        
-        let pairingStateLabel = UILabel()
-        let remoteStateLabel = UILabel()
-        
-        func viewDidLoad(_ view: UIView) {
-            // Do any additional setup after loading the view.
-            view.backgroundColor = .white
-            view.addSubview(pairingStateLabel)
-            view.addSubview(remoteStateLabel)
-            view.addSubview(connectButton)
-            view.addSubview(codeTextField)
-            view.addSubview(sendCodeButton)
-            view.addSubview(runNetflixButton)
-            view.addSubview(volUpButton)
-            view.addSubview(volDownButton)
-            
-            pairingStateLabel.numberOfLines = 0
-            remoteStateLabel.numberOfLines = 0
-            
-            pairingStateLabel.translatesAutoresizingMaskIntoConstraints = false
-            remoteStateLabel.translatesAutoresizingMaskIntoConstraints = false
-            connectButton.translatesAutoresizingMaskIntoConstraints = false
-            codeTextField.translatesAutoresizingMaskIntoConstraints = false
-            sendCodeButton.translatesAutoresizingMaskIntoConstraints = false
-            runNetflixButton.translatesAutoresizingMaskIntoConstraints = false
-            volUpButton.translatesAutoresizingMaskIntoConstraints = false
-            volDownButton.translatesAutoresizingMaskIntoConstraints = false
-            
-            pairingStateLabel.textAlignment = .center
-            remoteStateLabel.textAlignment = .center
-            
-            connectButton.backgroundColor = UIColor.gray.withAlphaComponent(0.7)
-            connectButton.layer.cornerRadius = 8
-            sendCodeButton.backgroundColor = UIColor.gray.withAlphaComponent(0.7)
-            sendCodeButton.layer.cornerRadius = 8
-            runNetflixButton.backgroundColor = UIColor.gray.withAlphaComponent(0.7)
-            runNetflixButton.layer.cornerRadius = 8
-            volUpButton.backgroundColor = UIColor.gray.withAlphaComponent(0.7)
-            volUpButton.layer.cornerRadius = 8
-            volDownButton.backgroundColor = UIColor.gray.withAlphaComponent(0.7)
-            volDownButton.layer.cornerRadius = 8
-            
-            codeTextField.layer.borderWidth = 2.0
-            codeTextField.layer.borderColor = UIColor.darkGray.cgColor
-            
-            NSLayoutConstraint.activate([
-                pairingStateLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 100),
-                pairingStateLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                pairingStateLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 10),
-                pairingStateLabel.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -10),
-                
-                remoteStateLabel.topAnchor.constraint(equalTo: pairingStateLabel.bottomAnchor, constant: 30),
-                remoteStateLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                remoteStateLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 10),
-                remoteStateLabel.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -10),
-                
-                connectButton.topAnchor.constraint(equalTo: remoteStateLabel.bottomAnchor, constant: 30),
-                connectButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                connectButton.heightAnchor.constraint(equalToConstant: 40),
-                connectButton.widthAnchor.constraint(equalToConstant: 120),
-                
-                codeTextField.topAnchor.constraint(equalTo: connectButton.bottomAnchor, constant: 30),
-                codeTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                codeTextField.heightAnchor.constraint(equalToConstant: 35),
-                codeTextField.widthAnchor.constraint(equalToConstant: 100),
-                
-                sendCodeButton.topAnchor.constraint(equalTo: codeTextField.bottomAnchor, constant: 30),
-                sendCodeButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                sendCodeButton.heightAnchor.constraint(equalToConstant: 40),
-                sendCodeButton.widthAnchor.constraint(equalToConstant: 120),
-                
-                runNetflixButton.topAnchor.constraint(equalTo: sendCodeButton.bottomAnchor, constant: 30),
-                runNetflixButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                runNetflixButton.heightAnchor.constraint(equalToConstant: 40),
-                runNetflixButton.widthAnchor.constraint(equalToConstant: 120),
-                
-                volUpButton.centerYAnchor.constraint(equalTo: runNetflixButton.centerYAnchor),
-                volUpButton.leftAnchor.constraint(equalTo: runNetflixButton.rightAnchor, constant: 15),
-                volUpButton.heightAnchor.constraint(equalToConstant: 40),
-                volUpButton.widthAnchor.constraint(equalToConstant: 80),
-                
-                volDownButton.centerYAnchor.constraint(equalTo: runNetflixButton.centerYAnchor),
-                volDownButton.rightAnchor.constraint(equalTo: runNetflixButton.leftAnchor, constant: -15),
-                volDownButton.heightAnchor.constraint(equalToConstant: 40),
-                volDownButton.widthAnchor.constraint(equalToConstant: 80),
-            ])
-            
-            connectButton.setTitle("Connect", for: .normal)
-            codeTextField.placeholder = "Enter Code"
-            sendCodeButton.setTitle("Send Code", for: .normal)
+struct RemoteKey: Identifiable {
+    var id: Int
+    var label: String
+    var key: KeyPress
+}
 
-            sendCodeButton.setTitleColor(.gray, for: .disabled)
-            sendCodeButton.setTitleColor(.white, for: .normal)
-            runNetflixButton.setTitle("Run Netflix", for: .normal)
-            volUpButton.setTitle("Vol +", for: .normal)
-            volDownButton.setTitle("Vol -", for: .normal)
+
+struct Views: View {
+    
+    private let remoteManager = RemoteTVManager()
+    
+    @State var ip: String = ""
+    @State var code: String = ""
+    
+    let columns = [
+        GridItem(.flexible()),
+        GridItem(.flexible()),
+        GridItem(.flexible())
+    ]
+    
+    let keys = [
+        RemoteKey(id: 0, label: "Vol Up", key: KeyPress(.KEYCODE_VOLUME_UP)),
+        RemoteKey(id: 1, label: "Up", key: KeyPress(.KEYCODE_DPAD_UP)),
+        RemoteKey(id: 2, label: "Ch Up", key: KeyPress(.KEYCODE_CHANNEL_UP)),
+        RemoteKey(id: 3, label: "Left", key: KeyPress(.KEYCODE_DPAD_LEFT)),
+        RemoteKey(id: 4, label: "Select", key: KeyPress(.KEYCODE_ENTER)),
+        RemoteKey(id: 5, label: "Right", key: KeyPress(.KEYCODE_DPAD_RIGHT)),
+        RemoteKey(id: 6, label: "Vol Down", key: KeyPress(.KEYCODE_VOLUME_DOWN)),
+        RemoteKey(id: 7, label: "Down", key: KeyPress(.KEYCODE_DPAD_DOWN)),
+        RemoteKey(id: 8, label: "Ch Down", key: KeyPress(.KEYCODE_CHANNEL_DOWN)),
+        RemoteKey(id: 9, label: "Back", key: KeyPress(.KEYCODE_BACK)),
+        RemoteKey(id: 10, label: "Settings", key: KeyPress(.KEYCODE_SETTINGS)),
+        RemoteKey(id: 11, label: "Home", key: KeyPress(.KEYCODE_HOME)),
+    ]
+    
+    var body: some View {
+        VStack {
+            HStack {
+                TextField("IP Address", text: $ip)
+                Button {
+                    remoteManager.connect(host: ip)
+                } label: {
+                    Text("Connect")
+                }
+            }
+            HStack {
+                TextField("Code", text: $code)
+                Button {
+                    remoteManager.sendCode(code: code)
+                } label: {
+                    Text("Send")
+                }
+            }
             
-            
-            pairingStateLabel.text = "pairingStateLabel"
-            remoteStateLabel.text = "remoteStateLabel"
+            LazyVGrid(columns: columns, spacing: 20) {
+                ForEach(keys) { key in
+                    Button {
+                        remoteManager.send(key: key.key)
+                    } label: {
+                        Text(key.label)
+                            .foregroundColor(.white)
+                            .bold()
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.blue)
+                    
+                }
+            }
         }
+        .padding()
     }
+    
 }
